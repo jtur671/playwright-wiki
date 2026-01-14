@@ -33,13 +33,22 @@ npm run test:ui
 npm run show-report
 ```
 
+Tagged runs:
+
+```bash
+npx playwright test --grep @smoke
+npx playwright test --grep @full
+```
+
 ## Project Structure
 
 - `playwright.config.ts` - Playwright configuration and reporters
-- `tests/wiki.spec.ts` - Example Wikipedia tests
+- `tests/wiki.spec.ts` - Main flow suite with tags and data-driven tests
+- `tests/wiki.portfolio.spec.ts` - Portfolio-style suite with extra coverage
 - `tests/fixtures.ts` - Shared test fixtures for page objects
 - `tests/pages/` - Page objects for Wikipedia pages and flows
 - `tests/components/` - Reusable UI components used by page objects
+- `tests/data/` - Test data for data-driven cases
 - `test-results/` - Test artifacts (gitignored)
 - `playwright-report/` - HTML report (gitignored)
 
