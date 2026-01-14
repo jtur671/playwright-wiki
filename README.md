@@ -1,6 +1,6 @@
 # Playwright Wikipedia Test Suite
 
-Simple, reliable Playwright test boilerplate that targets Wikipedia pages.
+Simple, reliable Playwright test suite that targets Wikipedia pages.
 
 ## What's Included
 
