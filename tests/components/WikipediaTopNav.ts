@@ -12,8 +12,32 @@ export class WikipediaTopNav {
   }
 
   async search(term: string): Promise<void> {
-    await this.searchBox.fill(term);
-    await this.searchBox.press('Enter');
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const searchBox = this.page.getByRole('searchbox', { name: 'Search Wikipedia' }).first();
+
+      try {
+        await searchBox.waitFor({ state: 'visible', timeout: 2000 });
+        await searchBox.evaluate((element, value) => {
+          const input = element as HTMLInputElement;
+          input.value = value as string;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+
+          if (input.form) {
+            input.form.submit();
+          } else {
+            input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+          }
+        }, term);
+        return;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError;
   }
 
   async openMainPage(): Promise<void> {
