@@ -37,8 +37,21 @@ npm run show-report
 
 - `playwright.config.ts` - Playwright configuration and reporters
 - `tests/wiki.spec.ts` - Example Wikipedia tests
+- `tests/fixtures.ts` - Shared test fixtures for page objects
+- `tests/pages/` - Page objects for Wikipedia pages and flows
+- `tests/components/` - Reusable UI components used by page objects
 - `test-results/` - Test artifacts (gitignored)
 - `playwright-report/` - HTML report (gitignored)
+
+## Architecture
+
+- Page Object Model with shared UI extracted into components
+- Fixtures create page objects once per test for clean test bodies
+- Assertion helpers live on POMs to keep tests intent-focused
+
+## Why Wikipedia
+
+Wikipedia is read-only and has stable, accessible selectors, making it a reliable target for demo automation without worrying about test data or mutations.
 
 ## Notes
 
