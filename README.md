@@ -7,6 +7,7 @@ Simple, reliable Playwright test suite that targets Wikipedia pages.
 - Playwright config with list, HTML, and JUnit reporters
 - Cross-browser projects (Chromium, Firefox, WebKit)
 - Example tests for Wikipedia homepage, search, and random article
+- Network + DOM consistency test using MediaWiki API summary
 - Screenshots, videos, and traces on failures
 
 ## Requirements
@@ -46,6 +47,7 @@ npx playwright test --grep @full
 - `tests/wikipedia.main-and-search.spec.ts` - Main flow suite with tags and data-driven tests
 - `tests/wikipedia.article-interactions.spec.ts` - Portfolio-style suite with extra coverage
 - `tests/wiki.tools.spec.ts` - Tools, meta pages, i18n, redirects, and footer coverage
+- `tests/wikipedia.network-dom-consistency.spec.ts` - Correlates UI content with MediaWiki API summary
 - `tests/fixtures.ts` - Shared test fixtures for page objects
 - `tests/pages/` - Page objects for Wikipedia pages and flows
 - `tests/components/` - Reusable UI components used by page objects
@@ -67,4 +69,3 @@ Wikipedia is read-only and has stable, accessible selectors, making it a reliabl
 
 - Tests run against the live `https://en.wikipedia.org` site.
 - If Wikipedia is slow, rerun or adjust timeouts in `playwright.config.ts`.
-# playwright-wiki
