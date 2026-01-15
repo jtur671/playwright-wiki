@@ -8,6 +8,7 @@ export class WikipediaArticlePage {
   readonly content: Locator;
   readonly toc: Locator;
   readonly infobox: Locator;
+  readonly editorTextarea: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -18,10 +19,16 @@ export class WikipediaArticlePage {
       '#toc, #vector-toc, .vector-toc, nav[aria-label="Contents"], nav[aria-labelledby="p-toc-label"]'
     );
     this.infobox = page.locator('table.infobox').first();
+    this.editorTextarea = page.locator('#wpTextbox1');
   }
 
   async open(slug: string): Promise<void> {
     await this.page.goto(`/wiki/${slug}`);
+  }
+
+  async openAndExpectHeading(slug: string): Promise<void> {
+    await this.open(slug);
+    await this.expectHeadingVisible();
   }
 
   async expectHeadingContains(text: string): Promise<void> {
@@ -71,5 +78,101 @@ export class WikipediaArticlePage {
     const firstInternalLink = firstPara.locator('a[href^="/wiki/"]:not([href*=":"])').first();
     await expect(firstInternalLink).toBeVisible();
     await firstInternalLink.click();
+  }
+
+  async openViewSourceOrNavigate(slug: string): Promise<void> {
+    const viewSource = this.page.getByRole('link', { name: /View source|Edit source/i }).first();
+    if (await this.tryClickLocator(viewSource)) {
+      await expect(this.page).toHaveURL(/action=edit/i);
+      return;
+    }
+
+    await this.page.goto(`/w/index.php?title=${this.encodeTitle(slug)}&action=edit`);
+  }
+
+  async openPageInformation(slug: string): Promise<void> {
+    await this.openToolOrNavigate(
+      /Page information/i,
+      'action=info',
+      `/w/index.php?title=${this.encodeTitle(slug)}&action=info`
+    );
+  }
+
+  async openCiteThisPage(slug: string): Promise<void> {
+    await this.openToolOrNavigate(
+      /Cite this page/i,
+      'Special:CiteThisPage',
+      `/w/index.php?title=Special:CiteThisPage&page=${this.encodeTitle(slug)}`
+    );
+  }
+
+  async openPermanentLink(slug: string): Promise<void> {
+    if (await this.tryClickLinkByNameOrHref(/Permanent link/i, 'oldid=')) {
+      return;
+    }
+
+    await this.page.goto(`/w/index.php?title=${this.encodeTitle(slug)}&action=history`);
+    const firstRevision = this.page.locator('#pagehistory a[href*="oldid="]').first();
+    await expect(firstRevision).toBeVisible();
+    await firstRevision.click();
+  }
+
+  async openWhatLinksHere(slug: string): Promise<void> {
+    await this.openToolOrNavigate(
+      /What links here/i,
+      'Special:WhatLinksHere',
+      `/wiki/Special:WhatLinksHere/${this.encodeTitle(slug)}`
+    );
+  }
+
+  async switchToLanguageOrNavigate(slug: string, languageCode: string): Promise<void> {
+    const link = this.page.locator(`a[lang="${languageCode}"]`).first();
+    if (await this.tryClickLocator(link)) {
+      return;
+    }
+
+    await this.page.goto(`https://${languageCode}.wikipedia.org/wiki/${this.encodeTitle(slug)}`);
+  }
+
+  async openPrivacyPolicyFromFooter(): Promise<void> {
+    const privacy = this.page.getByRole('link', { name: /Privacy policy/i }).first();
+    await privacy.scrollIntoViewIfNeeded();
+    await privacy.click();
+  }
+
+  private async openToolOrNavigate(name: RegExp, hrefContains: string, fallbackUrl: string): Promise<void> {
+    if (await this.tryClickLinkByNameOrHref(name, hrefContains)) {
+      return;
+    }
+
+    await this.page.goto(fallbackUrl);
+  }
+
+  private async tryClickLinkByNameOrHref(name: RegExp, hrefContains: string): Promise<boolean> {
+    const byName = this.page.getByRole('link', { name }).first();
+    if (await this.tryClickLocator(byName)) {
+      return true;
+    }
+
+    const byHref = this.page.locator(`a[href*="${hrefContains}"]`).first();
+    if (await this.tryClickLocator(byHref)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private async tryClickLocator(locator: Locator): Promise<boolean> {
+    if (await locator.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await locator.scrollIntoViewIfNeeded();
+      await locator.click();
+      return true;
+    }
+
+    return false;
+  }
+
+  private encodeTitle(title: string): string {
+    return encodeURIComponent(title);
   }
 }

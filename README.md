@@ -43,8 +43,9 @@ npx playwright test --grep @full
 ## Project Structure
 
 - `playwright.config.ts` - Playwright configuration and reporters
-- `tests/wiki.spec.ts` - Main flow suite with tags and data-driven tests
-- `tests/wiki.portfolio.spec.ts` - Portfolio-style suite with extra coverage
+- `tests/wikipedia.main-and-search.spec.ts` - Main flow suite with tags and data-driven tests
+- `tests/wikipedia.article-interactions.spec.ts` - Portfolio-style suite with extra coverage
+- `tests/wiki.tools.spec.ts` - Tools, meta pages, i18n, redirects, and footer coverage
 - `tests/fixtures.ts` - Shared test fixtures for page objects
 - `tests/pages/` - Page objects for Wikipedia pages and flows
 - `tests/components/` - Reusable UI components used by page objects
