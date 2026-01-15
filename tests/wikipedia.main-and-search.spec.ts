@@ -76,12 +76,14 @@ test.describe('Wikipedia main flows', () => {
           await home.topNav.search(articleCase.term);
         });
 
-        await test.step('Navigate to the intended article', async () => {
-          await results.openResultIfPresent(articleCase.resultTitle);
-        });
+        // await test.step('Navigate to the intended article', async () => {
+        //   await results.openResultIfPresent(articleCase.resultTitle);
+        // });
 
         await test.step('Validate the article', async () => {
-          await expect(page).toHaveURL(/wiki\//);
+          const expectedSlug = articleCase.resultTitle.replace(/\s+/g, '_');
+          const expectedUrl = new RegExp(`/wiki/${expectedSlug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+          await expect(page).toHaveURL(expectedUrl);
           await article.expectHeadingContains(articleCase.expectedHeading);
           if (articleCase.mentions.length > 0) {
             await article.expectContentMentions(articleCase.mentions);

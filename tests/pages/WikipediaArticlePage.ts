@@ -26,6 +26,44 @@ export class WikipediaArticlePage {
     await this.page.goto(`/wiki/${slug}`);
   }
 
+  async openAndCaptureSummary(
+    slug: string
+  ): Promise<{ title: string; extract: string; source: 'network' | 'fallback'; url: string }> {
+    const apiUrl = new RegExp(`api\\.php.*action=query.*titles=${this.encodeTitle(slug)}`, 'i');
+    const fallbackUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&format=json&titles=${this.encodeTitle(
+      slug
+    )}`;
+
+    const responsePromise = this.page.waitForResponse(apiUrl, { timeout: 5000 }).catch(() => null);
+
+    await this.open(slug);
+    await this.expectHeadingVisible();
+
+    const response = await responsePromise;
+    if (response) {
+      const json = await response.json().catch(() => null);
+      const summary = this.readSummary(json);
+      console.log(`[api] summary response: ${response.url()}`);
+      return {
+        title: summary.title,
+        extract: summary.extract,
+        source: 'network',
+        url: response.url(),
+      };
+    }
+
+    const res = await this.page.request.get(fallbackUrl);
+    console.log(`[api] fallback summary response: ${res.url()}`);
+    const json = await res.json().catch(() => null);
+    const summary = this.readSummary(json);
+    return {
+      title: summary.title,
+      extract: summary.extract,
+      source: 'fallback',
+      url: res.url(),
+    };
+  }
+
   async openAndExpectHeading(slug: string): Promise<void> {
     await this.open(slug);
     await this.expectHeadingVisible();
@@ -174,5 +212,16 @@ export class WikipediaArticlePage {
 
   private encodeTitle(title: string): string {
     return encodeURIComponent(title);
+  }
+
+  private readSummary(json: any): { title: string; extract: string } {
+    const pages = json?.query?.pages;
+    const firstKey = pages ? Object.keys(pages)[0] : null;
+    const pageObj = firstKey ? pages[firstKey] : null;
+
+    return {
+      title: pageObj?.title ?? '',
+      extract: pageObj?.extract ?? '',
+    };
   }
 }

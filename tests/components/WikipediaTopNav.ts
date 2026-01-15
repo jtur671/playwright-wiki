@@ -15,22 +15,18 @@ export class WikipediaTopNav {
     let lastError: unknown;
 
     for (let attempt = 0; attempt < 3; attempt += 1) {
-      const searchBox = this.page.getByRole('searchbox', { name: 'Search Wikipedia' }).first();
+      const searchForm = this.page.locator('#searchform').first();
+      const searchBox = searchForm.locator('input[name="search"]').first();
+      const searchButton = searchForm.getByRole('button', { name: /Search/i }).first();
 
       try {
         await searchBox.waitFor({ state: 'visible', timeout: 2000 });
-        await searchBox.evaluate((element, value) => {
-          const input = element as HTMLInputElement;
-          input.value = value as string;
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          input.dispatchEvent(new Event('change', { bubbles: true }));
-
-          if (input.form) {
-            input.form.submit();
-          } else {
-            input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-          }
-        }, term);
+        await searchBox.fill(term);
+        if (await searchButton.isVisible().catch(() => false)) {
+          await searchButton.click();
+        } else {
+          await searchBox.press('Enter');
+        }
         return;
       } catch (error) {
         lastError = error;

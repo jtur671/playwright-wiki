@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 
-test.describe('Wikipedia portfolio suite (POM + stable locators)', () => {
+test.describe('Wikipedia article interactions', () => {
   test('searches a broad term and opens the first search result', async ({ page, home, article, results }) => {
     await test.step('Search for a term that usually returns a results page', async () => {
       await home.goto();
@@ -8,7 +8,7 @@ test.describe('Wikipedia portfolio suite (POM + stable locators)', () => {
     });
 
     await test.step('Open the first result if a results page appears', async () => {
-      await results.openFirstResultIfPresent();
+      await results.openRandomResultIfPresent(5);
     });
 
     await test.step('Verify we landed on an article', async () => {
